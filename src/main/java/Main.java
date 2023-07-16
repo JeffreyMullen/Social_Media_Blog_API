@@ -1,5 +1,8 @@
 import Controller.SocialMediaController;
 import io.javalin.Javalin;
+import Service.SocialMediaService;
+import Service.SocialMediaServiceImpl;
+import DAO.SocialMediaDAOImpl;
 
 /**
  * This class is provided with a main method to allow you to manually run and test your application. This class will not
@@ -7,7 +10,8 @@ import io.javalin.Javalin;
  */
 public class Main {
     public static void main(String[] args) {
-        SocialMediaController controller = new SocialMediaController();
+        SocialMediaService service = new SocialMediaServiceImpl(new SocialMediaDAOImpl());
+        SocialMediaController controller = new SocialMediaController(service);
         Javalin app = controller.startAPI();
         app.start(8080);
     }
