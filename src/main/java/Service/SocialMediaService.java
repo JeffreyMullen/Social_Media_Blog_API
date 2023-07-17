@@ -18,6 +18,6 @@ public interface SocialMediaService
     Message getMessageById(int message_id);
     List<Message> getAllMessages();
     List<Message> getAllMessagesForUser(int account_id);
-    boolean updateMessage(int message_id, String new_text);
+    Message updateMessage(int message_id, String new_text);
     Message deleteMessage(int message_id);
 }

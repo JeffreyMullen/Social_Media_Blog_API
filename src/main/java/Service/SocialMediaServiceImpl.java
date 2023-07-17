@@ -94,15 +94,15 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     }
 
     //update message
-    public boolean updateMessage(int message_id, String new_text)
+    public Message updateMessage(int message_id, String new_text)
     {
         //if new_text is not null and not empty and length <= 255
-        if(new_text != null && !new_text.isBlank() && new_text.length() <= 255)
+        if(new_text == null || new_text.isBlank() || new_text.length() > 255)
         {
             //interact with DAO and return boolean
-            return socialDAO.updateMessage(message_id, new_text);
+            return null;
         }
-        return false;
+        return socialDAO.updateMessage(message_id, new_text);
     }
 
     //delete message

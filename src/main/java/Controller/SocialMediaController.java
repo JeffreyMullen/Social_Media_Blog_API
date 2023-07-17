@@ -59,11 +59,14 @@ public class SocialMediaController {
     {
         //create new mapper object
         ObjectMapper mapper = new ObjectMapper();
+
         //create new account object, retrieve username and password from context
         Account account = mapper.readValue(context.body(), Account.class);
+        
         //retrieve username and password from account object
         String username = account.getUsername();
         String password = account.getPassword();
+
         account = socialMediaService.createAccount(username, password);
 
         //if createdAccount is not null
@@ -222,27 +225,30 @@ public class SocialMediaController {
     }
 
     //updateMessageHandler
-    private void updateMessageHandler(Context context)
+    private void updateMessageHandler(Context context) throws JsonProcessingException
     {
+        ObjectMapper mapper = new ObjectMapper();
         //retrieve messageId from context
         int messageId = Integer.parseInt(context.pathParam("messageId"));
         //retrieve messageText from context
-        String messageText = context.body();
+        Message message = mapper.readValue(context.body(), Message.class);
+
+        String messageText = message.getMessage_text();
 
         //update message, true if successful, false if not
-        boolean updated = socialMediaService.updateMessage(messageId, messageText);
 
-        //if updated
-        if(updated)
+        message = socialMediaService.updateMessage(messageId, messageText);
+        
+        //if message is not null
+        if(message != null)
         {
-            //set status 200 and return updated message
-            Message updatedMessage = socialMediaService.getMessageById(messageId);
-            context.status(200).json(updatedMessage);
+            //set status 200 and return message
+            context.status(200).json(message);
         }
         else
         {
             //return error 400
             context.status(400).result("Message not updated");
-        }        
+        }      
     }
 }

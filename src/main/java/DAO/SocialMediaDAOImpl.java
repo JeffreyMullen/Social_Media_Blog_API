@@ -16,14 +16,14 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
         //if username and password are not null and not empty
         if(username == null || username.isEmpty() || password == null || password.isEmpty())
         {
-            //return null
+            //throw exception error
             return null;
         }
 
         //if username is less than 4 characters
         if(password.length() < 4)
         {
-            //return null
+            //throw exception error
             return null;
         }
 
@@ -40,7 +40,7 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
             ResultSet resultSet = preparedStatement.executeQuery();
             if(resultSet.next())
             {
-                //return null
+                //throw exception error
                 return null;
             }
 
@@ -66,7 +66,6 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
                     {
                         //get generated keys and store as account_id
                         int account_id = generatedKeys.getInt(1);
-                        System.out.println(account_id);
                         //return new account object
                         account = new Account(account_id, username, password);
                     }
@@ -218,7 +217,7 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
             if(resultSet.next())
             {
                 //retrieve message meta data, account_id, message_text, time_posted_epoch
-                int account_id = resultSet.getInt("account_id");
+                int account_id = resultSet.getInt("posted_by");
                 String message_text = resultSet.getString("message_text");
                 long time_posted_epoch = resultSet.getLong("time_posted_epoch");
                 //return new message object using data parameters
@@ -318,8 +317,10 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
 
     //update message
     @Override
-    public boolean updateMessage(int message_id, String new_text)
+    public Message updateMessage(int message_id, String new_text)
     {
+        Message message = null;
+        int affectedRows = 0;
         //try catch block to connect to database
         try(Connection connection = ConnectionUtil.getConnection())
         {
@@ -332,12 +333,28 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
             preparedStatement.setInt(2, message_id);
 
             //execute sql prepared statement and store results, if any
-            int affectedRows = preparedStatement.executeUpdate();
-
-            //if at least one row was affected
+            affectedRows = preparedStatement.executeUpdate();
             if(affectedRows > 0)
             {
-                return true;
+                sql = "SELECT * FROM message WHERE message_id = ?";
+                preparedStatement = connection.prepareStatement(sql);
+
+                //set values of sql prepared statement
+                preparedStatement.setInt(1, message_id);
+
+                //execute sql prepared statement and get results, if any
+                ResultSet resultSet = preparedStatement.executeQuery();
+
+                //if there are results
+                if(resultSet.next())
+                {
+                    //retrieve message meta data, account_id, message_text, time_posted_epoch
+                    int account_id = resultSet.getInt("posted_by");
+                    String message_text = resultSet.getString("message_text");
+                    long time_posted_epoch = resultSet.getLong("time_posted_epoch");
+                    //return new message object using data parameters
+                    message = new Message(message_id, account_id, message_text, time_posted_epoch);
+                }
             }
         }
         //catch exception if connection fails
@@ -346,7 +363,7 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
             System.out.println("Error: " + e.getMessage());
         }
         //return false if no message updated
-        return false;
+        return message;
     }
 
     //delete message
