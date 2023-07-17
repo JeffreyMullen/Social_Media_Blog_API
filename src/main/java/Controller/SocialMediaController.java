@@ -202,10 +202,10 @@ public class SocialMediaController {
         //retrieve messageText from context
         Message message = mapper.readValue(context.body(), Message.class);
 
+        //Get message text and store as string
         String messageText = message.getMessage_text();
 
-        //update message, true if successful, false if not
-
+        //update message in database
         message = socialMediaService.updateMessage(messageId, messageText);
         
         //if message is not null
