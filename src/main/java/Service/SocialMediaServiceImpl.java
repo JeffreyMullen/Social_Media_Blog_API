@@ -5,7 +5,7 @@ import java.util.List;
 import Model.Account;
 import Model.Message;
 import DAO.SocialMediaDAO;
-
+import DAO.SocialMediaDAOImpl;
 
 public class SocialMediaServiceImpl implements SocialMediaService {
 
@@ -13,16 +13,24 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     private SocialMediaDAO socialDAO;
 
     //constructor
-    public SocialMediaServiceImpl(SocialMediaDAO socialDAO)
+    public SocialMediaServiceImpl()
     {
-        this.socialDAO = socialDAO;
+        this.socialDAO = new SocialMediaDAOImpl();
     }
     
     //create account
     public Account createAccount(String username, String password)
     {
-        //interact with DAO and return created account
-        return socialDAO.createAccount(username, password);
+        //if username and password are not null and not empty
+        if (username != null && !username.isEmpty() && password != null && !password.isEmpty())
+        {
+            //interact with DAO and return created account
+            return socialDAO.createAccount(username, password);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     //get account by username
@@ -45,8 +53,12 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     //create message
     public Message createMessage(int account_id, String message_text, long time_posted_epoch)
     {
-        //interact with DAO and return created message
-        return socialDAO.createMessage(account_id, message_text, time_posted_epoch);
+        if(message_text != null && !message_text.isBlank() && message_text.length() <= 255)
+        {
+            //interact with DAO and return created message
+            return socialDAO.createMessage(account_id, message_text, time_posted_epoch);
+        }
+        return null;        
     }
 
     //get last created message id
@@ -80,8 +92,13 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     //update message
     public boolean updateMessage(int message_id, String new_text)
     {
-        //interact with DAO and return boolean
-        return socialDAO.updateMessage(message_id, new_text);
+        //if new_text is not null and not empty and length <= 255
+        if(new_text != null && !new_text.isBlank() && new_text.length() <= 255)
+        {
+            //interact with DAO and return boolean
+            return socialDAO.updateMessage(message_id, new_text);
+        }
+        return false;
     }
 
     //delete message

@@ -16,29 +16,37 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
         //if username and password are not null and not empty
         if(username == null || username.isEmpty() || password == null || password.isEmpty())
         {
-            //throw exception error
-            throw new IllegalArgumentException("Username and password cannot be null or empty");
+            //return null
+            return null;
         }
 
-        //if username already exists
-        if(getAccountByUsername(username) != null)
+        //if username is less than 4 characters
+        if(password.length() < 4)
         {
-            //throw exception error
-            throw new IllegalArgumentException("Username already exists");
+            //return null
+            return null;
         }
 
-        if(username.length() < 4)
-        {
-            //throw exception error
-            throw new IllegalArgumentException("Username must be at least 4 characters");
-        }
+        //create account set to null
+        Account account = null;
 
         //try catch block to connect to database
         try(Connection connection = ConnectionUtil.getConnection())
         {
-            //create sql statement to insert new account username and password
-            String sql = "INSERT INTO account (username, password) VALUES (?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            //check if username is already in database
+            String sql = "SELECT * FROM account WHERE username = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, username);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if(resultSet.next())
+            {
+                //return null
+                return null;
+            }
+
+            //change sql statement to insert new account username and password
+            sql = "INSERT INTO account (username, password) VALUES (?, ?)";
+            preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             //set values of sql prepared statement
             preparedStatement.setString(1, username);
@@ -58,8 +66,9 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
                     {
                         //get generated keys and store as account_id
                         int account_id = generatedKeys.getInt(1);
+                        System.out.println(account_id);
                         //return new account object
-                        return new Account(account_id, username, password);
+                        account = new Account(account_id, username, password);
                     }
                 }
             }
@@ -74,14 +83,15 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
         {
             System.out.println("Error creating account: " + e.getMessage());
         }
-        //return null if no account created
-        return null;
+        //return account, set to null on failure
+        return account;
     }
 
     //get account by username
     @Override
     public Account getAccountByUsername(String username)
     {
+        Account account = null;
         //try catch block to connect to database
         try(Connection connection = ConnectionUtil.getConnection())
         {
@@ -111,7 +121,7 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
             System.out.println("Error finding account: " + e.getMessage());
         }
         //return null if no results
-        return null;
+        return account;
     }
 
     //create message
