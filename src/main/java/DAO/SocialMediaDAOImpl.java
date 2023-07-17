@@ -132,8 +132,8 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
         try(Connection connection = ConnectionUtil.getConnection())
         {
             //create sql prepared statement to insert values into message table
-            String sql = "INSERT INTO message (account_id, message_text, time_posted_epoch) VALUES (?, ?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            String sql = "INSERT INTO message (posted_by, message_text, time_posted_epoch) VALUES (?, ?, ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             //set values of sql prepared statement
             preparedStatement.setInt(1, account_id);
             preparedStatement.setString(2, message_text);
@@ -351,33 +351,50 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
 
     //delete message
     @Override
-    public boolean deleteMessage(int message_id)
+    public Message deleteMessage(int message_id)
     {
+        Message message = null;
         //try catch block to connect to database
         try(Connection connection = ConnectionUtil.getConnection())
         {
             //create sql prepared statement searching for message by message_id
-            String sql = "DELETE FROM message WHERE message_id = ?";
+            String sql = "SELECT * FROM message WHERE message_id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            
+
             //set values of sql prepared statement
             preparedStatement.setInt(1, message_id);
 
-            //execute sql prepared statement and store results, if any
-            int affectedRows = preparedStatement.executeUpdate();
+            //execute sql prepared statement and get results, if any
+            ResultSet resultSet = preparedStatement.executeQuery();
 
-            //if any messages were deleted, return true
-            if(affectedRows > 0)
+            //if there are results
+            if(resultSet.next())
             {
-                return true;
+                //retrieve message meta data, account_id, message_text, time_posted_epoch
+                int account_id = resultSet.getInt("posted_by");
+                String message_text = resultSet.getString("message_text");
+                long time_posted_epoch = resultSet.getLong("time_posted_epoch");
+                //store new message object using data parameters
+                message = new Message(message_id, account_id, message_text, time_posted_epoch);
             }
+
+            if(message != null)
+            {
+                //create sql prepared statement deleting message
+                sql = "DELETE FROM message WHERE message_id = ?";
+                preparedStatement = connection.prepareStatement(sql);
+            
+                //set values of sql prepared statement and execute
+                preparedStatement.setInt(1, message_id);
+                preparedStatement.executeUpdate();
+            }            
         }
         //catch exception if connection fails
         catch(SQLException e)
         {
             System.out.println("Error: " + e.getMessage());
         }
-        //return false if no message deleted
-        return false;
+        //return message object
+        return message;
     }
 }

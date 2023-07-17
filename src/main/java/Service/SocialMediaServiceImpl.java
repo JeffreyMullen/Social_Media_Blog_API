@@ -41,13 +41,17 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     }
     
     //validate login credentials
-    public boolean validatePassword(String username, String password)
+    public Account validatePassword(String username, String password)
     {
         //create account object and retrieve account from DAO
         Account account = socialDAO.getAccountByUsername(username);
 
+        if(account != null && account.getUsername().equals(username) && account.getPassword().equals(password))
+        {
+            return account;
+        }
         //return true if username and password are valid, else return false
-        return account != null && account.getUsername().equals(username) && account.getPassword().equals(password);
+        return null;
     }
 
     //create message
@@ -102,9 +106,10 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     }
 
     //delete message
-    public boolean deleteMessage(int message_id)
+    public Message deleteMessage(int message_id)
     {
-        //interact with DAO and return boolean
-        return socialDAO.deleteMessage(message_id);
+        Message message = socialDAO.deleteMessage(message_id);
+        //interact with DAO and return message object
+        return message;
     }
 }

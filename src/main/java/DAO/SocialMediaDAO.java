@@ -18,5 +18,5 @@ public interface SocialMediaDAO
     List<Message> getAllMessages();
     List<Message> getAllMessagesForUser(int account_id);
     boolean updateMessage(int message_id, String new_text);
-    boolean deleteMessage(int message_id);
+    Message deleteMessage(int message_id);
 }

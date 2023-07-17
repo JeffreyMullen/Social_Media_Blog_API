@@ -59,13 +59,14 @@ public class SocialMediaController {
     {
         //create new mapper object
         ObjectMapper mapper = new ObjectMapper();
-                //create new account object, retrieve username and password from context
+        //create new account object, retrieve username and password from context
         Account account = mapper.readValue(context.body(), Account.class);
-                //retrieve username and password from account object
+        //retrieve username and password from account object
         String username = account.getUsername();
         String password = account.getPassword();
-                account = socialMediaService.createAccount(username, password);
-                //if createdAccount is not null
+        account = socialMediaService.createAccount(username, password);
+
+        //if createdAccount is not null
         if(account != null)
         {
             //respond successful and return account object
@@ -88,12 +89,11 @@ public class SocialMediaController {
         String username = account.getUsername();
         String password = account.getPassword();
         
-        //create account object using username
-        boolean isValid = socialMediaService.validatePassword(username, password);
-        //if account is not null and password matches stored password
-        if(isValid)
+        //validate username and password and return account if validated
+        account = socialMediaService.validatePassword(username, password);
+
+        if(account != null)
         {
-            account = socialMediaService.getAccountByUsername(username);
             //return account object
             context.json(account);
         }
@@ -114,16 +114,16 @@ public class SocialMediaController {
         //retrieve messageText and postedBy from context
         String messageText = message.getMessage_text();
         int postedBy = message.getPosted_by();
+        long timePosted = message.getTime_posted_epoch();
         
         //create message
-        Message createdMessage = socialMediaService.createMessage(postedBy, messageText, System.currentTimeMillis());
+        message = socialMediaService.createMessage(postedBy, messageText, timePosted);
 
         //if created message is not null
-        if(createdMessage != null)
+        if(message != null)
         {
-            //set message_id and create json with status 200
-            createdMessage.setMessage_id(socialMediaService.getLastCreatedMessageId());
-            context.status(200).json(createdMessage);
+            //create json with status 200
+            context.status(200).json(message);
         }
         else
         {
@@ -205,29 +205,15 @@ public class SocialMediaController {
     //deleteMessageHandler
     private void deleteMessageHandler(Context context) throws JsonProcessingException
     {
-        ObjectMapper mapper = new ObjectMapper();
-
-        Message message = mapper.readValue(context.body(), Message.class);
-
         //retrieve messageId from context
-        int messageId = message.getMessage_id();
-        //delete message, store boolean true if successful, false if not
-        Message deleteMessage = socialMediaService.getMessageById(messageId);
+        int messageId = Integer.parseInt(context.pathParam("messageId"));
 
-        //if deleted message was found
-        if(deleteMessage != null)
+        //delete message and store boolean true if successful, false if not
+        Message deleted = socialMediaService.deleteMessage(messageId);
+        if(deleted != null)
         {
-            //delete message and store boolean true if successful, false if not
-            boolean deleted = socialMediaService.deleteMessage(messageId);
-            if(deleted)
-            {
-                //set status 200 and return deleted message
-                context.status(200).json(deleteMessage);
-            }
-            else
-            {
-                context.status(200);
-            }
+            //set status 200 and return deleted message
+            context.status(200).json(deleted);
         }
         else
         {
