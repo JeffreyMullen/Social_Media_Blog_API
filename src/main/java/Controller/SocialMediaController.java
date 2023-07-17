@@ -44,7 +44,6 @@ public class SocialMediaController {
         app.delete("/messages/{messageId}", this::deleteMessageHandler);
         app.patch("/messages/{messageId}", this::updateMessageHandler);
 
-        //app.start(8080);
         //return app
         return app;
     }
@@ -248,7 +247,7 @@ public class SocialMediaController {
         else
         {
             //return error 400
-            context.status(400).result("Message not updated");
+            context.status(400);
         }      
     }
 }

@@ -57,7 +57,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     //create message
     public Message createMessage(int account_id, String message_text, long time_posted_epoch)
     {
-        if(message_text != null && !message_text.isBlank() && message_text.length() <= 255)
+        if(message_text != null && !message_text.isBlank() && message_text.length() < 255)
         {
             //interact with DAO and return created message
             return socialDAO.createMessage(account_id, message_text, time_posted_epoch);
@@ -97,7 +97,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     public Message updateMessage(int message_id, String new_text)
     {
         //if new_text is not null and not empty and length <= 255
-        if(new_text == null || new_text.isBlank() || new_text.length() > 255)
+        if(new_text == null || new_text.isBlank() || new_text.length() >= 255)
         {
             //interact with DAO and return boolean
             return null;
