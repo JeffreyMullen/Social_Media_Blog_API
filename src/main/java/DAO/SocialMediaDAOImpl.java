@@ -255,7 +255,7 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
             {
                 //retrieve message meta data, message_id, account_id, message_text, time_posted_epoch
                 int message_id = resultSet.getInt("message_id");
-                int account_id = resultSet.getInt("account_id");
+                int account_id = resultSet.getInt("posted_by");
                 String message_text = resultSet.getString("message_text");
                 long time_posted_epoch = resultSet.getLong("time_posted_epoch");
                 //create Message object and add to messages list
@@ -281,7 +281,7 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
         try(Connection connection = ConnectionUtil.getConnection())
         {
             //create sql prepared statement searching for message by account_id
-            String sql = "SELECT * FROM message WHERE account_id = ?";
+            String sql = "SELECT * FROM message WHERE posted_by = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
 
             //set values of sql prepared statement

@@ -140,33 +140,18 @@ public class SocialMediaController {
         //get all messages
         List<Message> messages = socialMediaService.getAllMessages();
 
-        //if messages is not empty
-        if(messages.size() > 0)
-        {
-            //set status 200 and return messages
-            context.status(200).json(messages);
-        }
-        else
-        {
-            //return 200 with no messages
-            context.status(200);
-        }
+        //set status 200 and return messages
+        context.status(200).json(messages);
     }
 
     //getMessageHandler
     private void getMessageHandler(Context context) throws JsonProcessingException
     {
-        ObjectMapper mapper = new ObjectMapper();
-
-        Message message = mapper.readValue(context.body(), Message.class);
-
-
         //retrieve messageId from context
-        int messageId = message.getMessage_id();
+        int messageId = Integer.parseInt(context.pathParam("messageId"));
         //get message by message id
-        message = socialMediaService.getMessageById(messageId);
+        Message message = socialMediaService.getMessageById(messageId);
 
-        //if message is not null
         if(message != null)
         {
             //set status 200 and return message
@@ -174,7 +159,6 @@ public class SocialMediaController {
         }
         else
         {
-            //return error 200 with no message
             context.status(200);
         }
     }
@@ -182,26 +166,12 @@ public class SocialMediaController {
     //getMessagesForUserHandler
     private void getMessagesForUserHandler(Context context) throws JsonProcessingException
     {
-        ObjectMapper mapper = new ObjectMapper();
+        int account_id = Integer.parseInt(context.pathParam("accountId"));
 
-        Message message = mapper.readValue(context.body(), Message.class);
-
-        //retrieve accountId from context
-        int accountId = message.getPosted_by();
         //get all messages for user
-        List<Message> messages = socialMediaService.getAllMessagesForUser(accountId);
+        List<Message> messages = socialMediaService.getAllMessagesForUser(account_id);
 
-        //if messages is not empty
-        if(messages.size() > 0)
-        {
-            //set status 200 and return messages
-            context.status(200).json(messages);
-        }
-        else
-        {
-            //return 200 with no messages
-            context.status(200);
-        }
+        context.status(200).json(messages);
     }
 
     //deleteMessageHandler
