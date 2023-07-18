@@ -145,7 +145,7 @@ public class SocialMediaController {
     }
 
     //getMessageHandler
-    private void getMessageHandler(Context context) throws JsonProcessingException
+    private void getMessageHandler(Context context)
     {
         //retrieve messageId from context
         int messageId = Integer.parseInt(context.pathParam("messageId"));
@@ -164,18 +164,20 @@ public class SocialMediaController {
     }
 
     //getMessagesForUserHandler
-    private void getMessagesForUserHandler(Context context) throws JsonProcessingException
+    private void getMessagesForUserHandler(Context context)
     {
+        //retrieve account_id from context
         int account_id = Integer.parseInt(context.pathParam("accountId"));
 
         //get all messages for user
         List<Message> messages = socialMediaService.getAllMessagesForUser(account_id);
 
+        //return status 200 with messages List
         context.status(200).json(messages);
     }
 
     //deleteMessageHandler
-    private void deleteMessageHandler(Context context) throws JsonProcessingException
+    private void deleteMessageHandler(Context context)
     {
         //retrieve messageId from context
         int messageId = Integer.parseInt(context.pathParam("messageId"));
@@ -202,10 +204,10 @@ public class SocialMediaController {
         //retrieve messageText from context
         Message message = mapper.readValue(context.body(), Message.class);
 
+        //retrieve message_text from message object
         String messageText = message.getMessage_text();
 
-        //update message, true if successful, false if not
-
+        //update message by creating message object calling updateMessage method
         message = socialMediaService.updateMessage(messageId, messageText);
         
         //if message is not null

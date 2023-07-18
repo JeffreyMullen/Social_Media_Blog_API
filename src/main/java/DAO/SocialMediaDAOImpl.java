@@ -16,37 +16,33 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
         //if username and password are not null and not empty
         if(username == null || username.isEmpty() || password == null || password.isEmpty())
         {
-            //throw exception error
             return null;
         }
 
         //if username is less than 4 characters
         if(password.length() < 4)
         {
-            //throw exception error
             return null;
         }
 
-        //create account set to null
-        Account account = null;
+        //attempt to retrieve account from database
+        Account account = getAccountByUsername(username);
 
-        //try catch block to connect to database
-        try(Connection connection = ConnectionUtil.getConnection())
+        //if account exists
+        if(account != null)
         {
-            //check if username is already in database
-            String sql = "SELECT * FROM account WHERE username = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, username);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if(resultSet.next())
-            {
-                //throw exception error
-                return null;
-            }
+            return null;
+        }
 
+        //create connection to database
+        Connection connection = ConnectionUtil.getConnection();
+
+        //try catch block
+        try
+        {
             //change sql statement to insert new account username and password
-            sql = "INSERT INTO account (username, password) VALUES (?, ?)";
-            preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            String sql = "INSERT INTO account (username, password) VALUES (?, ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             //set values of sql prepared statement
             preparedStatement.setString(1, username);
@@ -71,7 +67,7 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
                     }
                 }
             }
-            //throw exception error if no keys were generated
+            //throw exception if no rows were affected
             else
             {
                 throw new SQLException("Creating account failed, no rows affected.");
@@ -90,9 +86,14 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
     @Override
     public Account getAccountByUsername(String username)
     {
+        //create null account
         Account account = null;
-        //try catch block to connect to database
-        try(Connection connection = ConnectionUtil.getConnection())
+
+        //create connection to database
+        Connection connection = ConnectionUtil.getConnection();
+
+        //try catch block
+        try
         {
             //create sql prepared statement to find accounts with matching username
             String sql = "SELECT * FROM account WHERE username = ?";
@@ -127,8 +128,11 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
     @Override
     public Message createMessage(int account_id, String message_text, long time_posted_epoch)
     {
-        //try catch block to connect to database
-        try(Connection connection = ConnectionUtil.getConnection())
+        //create connection to database
+        Connection connection = ConnectionUtil.getConnection();
+
+        //try catch block
+        try
         {
             //create sql prepared statement to insert values into message table
             String sql = "INSERT INTO message (posted_by, message_text, time_posted_epoch) VALUES (?, ?, ?)";
@@ -166,42 +170,15 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
         return null;
     }
 
-    //get last created message id
-    @Override
-    public int getLastCreatedMessageId()
-    {
-        //try catch block to connect to database
-        try(Connection connection = ConnectionUtil.getConnection())
-        {
-            //create sql prepared statement looking for the max message_id
-            String sql = "SELECT MAX(message_id) FROM message";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-
-            //execute sql prepared statement and store results, if any
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            //if there are results
-            if(resultSet.next())
-            {
-                //return id of last created message
-                return resultSet.getInt(1);
-            }
-        }
-        //catch exception if connection fails
-        catch(SQLException e)
-        {
-            System.out.println("Error: " + e.getMessage());
-        }
-        //return 0 if no results
-        return 0;
-    }
-
     //get message by message id
     @Override
     public Message getMessageById(int message_id)
     {
-        //try catch block to connect to database
-        try(Connection connection = ConnectionUtil.getConnection())
+        //create connection to database
+        Connection connection = ConnectionUtil.getConnection();
+
+        //try catch block
+        try
         {
             //create sql prepared statement searching for message by message_id
             String sql = "SELECT * FROM message WHERE message_id = ?";
@@ -237,8 +214,11 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
     @Override
     public List<Message> getAllMessages()
     {
-        //try catch block to connect to database
-        try(Connection connection = ConnectionUtil.getConnection())
+        //create connection to database
+        Connection connection = ConnectionUtil.getConnection();
+
+        //try catch block
+        try
         {
             //create sql prepared statement searching for all messages
             String sql = "SELECT * FROM message";
@@ -277,8 +257,11 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
     @Override
     public List<Message> getAllMessagesForUser(int account_id)
     {
-        //try catch block to connect to database
-        try(Connection connection = ConnectionUtil.getConnection())
+        //create connection to database
+        Connection connection = ConnectionUtil.getConnection();
+
+        //try catch block
+        try
         {
             //create sql prepared statement searching for message by account_id
             String sql = "SELECT * FROM message WHERE posted_by = ?";
@@ -319,10 +302,14 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
     @Override
     public Message updateMessage(int message_id, String new_text)
     {
+        //create connection to database
+        Connection connection = ConnectionUtil.getConnection();
+
+        //create null message object
         Message message = null;
-        int affectedRows = 0;
-        //try catch block to connect to database
-        try(Connection connection = ConnectionUtil.getConnection())
+
+        //try catch block
+        try
         {
             //create sql prepared statement searching for message by message_id
             String sql = "UPDATE message SET message_text = ? WHERE message_id = ?";
@@ -333,28 +320,11 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
             preparedStatement.setInt(2, message_id);
 
             //execute sql prepared statement and store results, if any
-            affectedRows = preparedStatement.executeUpdate();
+            int affectedRows = preparedStatement.executeUpdate();
             if(affectedRows > 0)
             {
-                sql = "SELECT * FROM message WHERE message_id = ?";
-                preparedStatement = connection.prepareStatement(sql);
-
-                //set values of sql prepared statement
-                preparedStatement.setInt(1, message_id);
-
-                //execute sql prepared statement and get results, if any
-                ResultSet resultSet = preparedStatement.executeQuery();
-
-                //if there are results
-                if(resultSet.next())
-                {
-                    //retrieve message meta data, account_id, message_text, time_posted_epoch
-                    int account_id = resultSet.getInt("posted_by");
-                    String message_text = resultSet.getString("message_text");
-                    long time_posted_epoch = resultSet.getLong("time_posted_epoch");
-                    //return new message object using data parameters
-                    message = new Message(message_id, account_id, message_text, time_posted_epoch);
-                }
+                //get updated message from database using message_id
+                message = getMessageById(message_id);
             }
         }
         //catch exception if connection fails
@@ -362,7 +332,7 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
         {
             System.out.println("Error: " + e.getMessage());
         }
-        //return false if no message updated
+        //return message
         return message;
     }
 
@@ -370,36 +340,23 @@ public class SocialMediaDAOImpl implements SocialMediaDAO
     @Override
     public Message deleteMessage(int message_id)
     {
+        //create connection to database
+        Connection connection = ConnectionUtil.getConnection();
+        
+        //create null message object
         Message message = null;
-        //try catch block to connect to database
-        try(Connection connection = ConnectionUtil.getConnection())
+        //try catch block
+        try
         {
-            //create sql prepared statement searching for message by message_id
-            String sql = "SELECT * FROM message WHERE message_id = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-
-            //set values of sql prepared statement
-            preparedStatement.setInt(1, message_id);
-
-            //execute sql prepared statement and get results, if any
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            //if there are results
-            if(resultSet.next())
-            {
-                //retrieve message meta data, account_id, message_text, time_posted_epoch
-                int account_id = resultSet.getInt("posted_by");
-                String message_text = resultSet.getString("message_text");
-                long time_posted_epoch = resultSet.getLong("time_posted_epoch");
-                //store new message object using data parameters
-                message = new Message(message_id, account_id, message_text, time_posted_epoch);
-            }
-
+            //retrieve message from database
+            message = getMessageById(message_id);
+            
+            //if message exists
             if(message != null)
             {
                 //create sql prepared statement deleting message
-                sql = "DELETE FROM message WHERE message_id = ?";
-                preparedStatement = connection.prepareStatement(sql);
+                String sql = "DELETE FROM message WHERE message_id = ?";
+                PreparedStatement preparedStatement = connection.prepareStatement(sql);
             
                 //set values of sql prepared statement and execute
                 preparedStatement.setInt(1, message_id);

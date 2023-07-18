@@ -13,7 +13,6 @@ public interface SocialMediaDAO
     
     //Message CRUD (create, read, update, delete)
     Message createMessage(int account_id, String message_text, long time_posted_epoch);
-    int getLastCreatedMessageId();
     Message getMessageById(int message_id);
     List<Message> getAllMessages();
     List<Message> getAllMessagesForUser(int account_id);

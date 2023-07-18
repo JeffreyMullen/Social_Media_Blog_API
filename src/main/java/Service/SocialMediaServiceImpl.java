@@ -65,17 +65,10 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         return null;        
     }
 
-    //get last created message id
-    public int getLastCreatedMessageId()
-    {
-        //interact with DAO and return last created message id
-        return socialDAO.getLastCreatedMessageId();
-    }
-
     //get message by message id
     public Message getMessageById(int message_id)
     {
-        //interact with DAO and return message
+        //interact with DAO and return message by message id
         return socialDAO.getMessageById(message_id);
     }
 
@@ -89,7 +82,7 @@ public class SocialMediaServiceImpl implements SocialMediaService {
     //get all messages for user
     public List<Message> getAllMessagesForUser(int account_id)
     {
-        //interact with DAO and return all messages
+        //interact with DAO and return all messages for user
         return socialDAO.getAllMessagesForUser(account_id);
     }
 
@@ -99,17 +92,16 @@ public class SocialMediaServiceImpl implements SocialMediaService {
         //if new_text is not null and not empty and length <= 255
         if(new_text == null || new_text.isBlank() || new_text.length() >= 255)
         {
-            //interact with DAO and return boolean
             return null;
         }
+        //interact with DAO and return updated message
         return socialDAO.updateMessage(message_id, new_text);
     }
 
     //delete message
     public Message deleteMessage(int message_id)
     {
-        Message message = socialDAO.deleteMessage(message_id);
-        //interact with DAO and return message object
-        return message;
+        //interact with DAO and return deleted message
+        return socialDAO.deleteMessage(message_id);
     }
 }
